@@ -1,17 +1,19 @@
-class ApiError extends Error{
+class ApiError extends Error {
     constructor(status, message) {
         super();
         this.status = status
         this.message = message
     }
 
-    static BadRequest(message){
-        return new ApiError(404, message)
+    static BadRequest(message, errors = []) {
+        return new ApiError(404, {message, errors})
     }
-    static Internal(message){
+
+    static Internal(message) {
         return new ApiError(500, message)
     }
-    static Forbidden(message){
+
+    static Forbidden(message) {
         return new ApiError(403, message)
     }
 }
