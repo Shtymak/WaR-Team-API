@@ -9,7 +9,7 @@ class UserService {
     async registration(email, password) {
         const candidate = await User.findOne({email})
         if (candidate)
-            throw new ApiError.BadRequest(`Користувач з логіном ${email} існує!`)
+            throw ApiError.BadRequest(`Користувач з логіном ${email} існує!`)
         const hashPassword = await bcrypt.hash(password, 9)
         const activationLink = uuid.v4()
         const user = await User.create({email, password: hashPassword, activationLink})

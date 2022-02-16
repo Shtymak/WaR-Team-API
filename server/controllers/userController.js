@@ -1,24 +1,23 @@
-const userService = require('../service/UserService')
-const User = require('../models/User')
-const jwt = require("jsonwebtoken");
-const ApiError = require("../error/ApiError");
-const bcrypt = require("bcrypt");
 
-const generateJwt = (id, email, role) => {
-    return jwt.sign({id, email, role},
-        process.env.SECRET_KEY,
-        {expiresIn: '24h'})
-}
+const userService = require('../service/UserService')
+const ApiError = require("../error/ApiError");
+
+const {validationResult} = require('express-validator')
+
 
 class UserController {
     async registration(req, res, next) {
         try {
+            const errors = validationResult(req)
+            if(!errors.isEmpty()){
+                return next(ApiError.BadRequest("Помилка валідації"))
+            }
             const {email, password} = req.body;
             const userData = await userService.registration(email, password);
             res.cookie('refreshToken', userData.refreshToken, {maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true})
             return res.json(userData);
         } catch (e) {
-
+            return next(ApiError.Forbidden(e.message))
         }
     }
 
