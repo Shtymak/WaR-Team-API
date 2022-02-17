@@ -16,6 +16,14 @@ class ApiError extends Error {
     static Forbidden(message) {
         return new ApiError(403, message)
     }
+
+    static NotFound(message){
+        return new ApiError(404, message)
+    }
+
+    static UnauthorizedError(message = "Ви неавторизовані"){
+        return new ApiError(401, message)
+    }
 }
 
 
