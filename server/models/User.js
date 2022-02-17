@@ -9,7 +9,8 @@ const User = new Schema({
         dateOfBirth: {type: Date, default: new Date().getDate()},
         image: {type: String, required: false},
         isActivated: {type: Boolean, default: false},
-        activationLink: {type: String}
+        activationLink: {type: String},
+        role: {type: String, default: "USER"},
     }
 )
 

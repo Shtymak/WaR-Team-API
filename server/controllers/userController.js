@@ -11,8 +11,8 @@ class UserController {
             if (!errors.isEmpty()) {
                 return next(ApiError.BadRequest("Помилка валідації", errors.array()))
             }
-            const {email, password} = req.body;
-            const userData = await userService.registration(email, password);
+            const {email, password, role} = req.body;
+            const userData = await userService.registration(email, password, role);
             res.cookie('refreshToken', userData.refreshToken, {maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true})
             return res.json(userData);
         } catch (e) {
@@ -75,9 +75,10 @@ class UserController {
 
     async getUsers(req, res, next) {
         try {
-            res.json([1, 2, 3])
+            const users = await userService.getAllUsers();
+            res.json(users)
         } catch (e) {
-
+            res.status(e.status).json(e)
         }
     }
 }
