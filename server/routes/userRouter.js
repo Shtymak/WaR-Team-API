@@ -3,6 +3,7 @@ const {body} = require('express-validator')
 const router = new Router()
 const userController = require('../controllers/userController')
 const checkRoleMiddleware = require('../middleware/checkRoleMiddleware')
+const AuthMiddleware = require('../middleware/authMiddleware')
 
 
 router.post('/registration',
@@ -14,5 +15,6 @@ router.post('/logout', userController.logout)
 router.get('/activate/:link', userController.activate)
 router.get('/refresh', userController.refresh)
 router.get('/users', checkRoleMiddleware("ADMIN"), userController.getUsers)
-router.get('/user/:id', userController.getOne)
+router.get('/:id', userController.getOne)
+router.put('/update', AuthMiddleware, userController.update)
 module.exports = router

@@ -12,5 +12,4 @@ module.exports = class UserDto{
         this.gender = model.gender
         this.dateOfBirth = model.dateOfBirth
     }
-
 }
