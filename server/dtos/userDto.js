@@ -7,6 +7,10 @@ module.exports = class UserDto{
         this.id = model._id
         this.isActivated = model.isActivated
         this.role = model.role
+        this.height = model.height
+        this.weight = model.weight
+        this.gender = model.gender
+        this.dateOfBirth = model.dateOfBirth
     }
 
 }
