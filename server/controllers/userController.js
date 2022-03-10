@@ -17,8 +17,8 @@ class UserController {
             if (!errors.isEmpty()) {
                 return next(ApiError.BadRequest("Помилка валідації", errors.array()))
             }
-            const { email, password, role } = req.body;
-            const userData = await userService.registration(email, password, role);
+            const { email, password, name, role } = req.body;
+            const userData = await userService.registration(email, password, role, name);
             res.cookie('refreshToken', userData.refreshToken, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true })
             return res.json(userData);
         } catch (e) {
@@ -84,7 +84,7 @@ class UserController {
             const users = await userService.getAllUsers();
             res.json(users)
         } catch (e) {
-            res.status(e.status).json(e)
+            next(ApiError.BadRequest(`Помикла ${e.message}`))
         }
     }
 
@@ -92,7 +92,11 @@ class UserController {
     async update(req, res, next) {
         try {
             const { id } = req.user
-            const { name, height, weight, gender, dateOfBirth } = req.body
+            const errors = validationResult(req)
+            if (!errors.isEmpty()) {
+                return next(ApiError.BadRequest("Помилка валідації", errors.array()))
+            }
+            const { height, weight, gender, dateOfBirth } = req.body
             const { image } = req.files
             const fileName = uuid.v4() + fileType
             image.mv(path.resolve(__dirname, '..', 'static', fileName))
@@ -103,7 +107,6 @@ class UserController {
             }
             const result = await User.findByIdAndUpdate({ _id: user._id }, {
                 $set: {
-                    name: name,
                     height: height,
                     weight: weight,
                     gender: gender,
@@ -111,7 +114,7 @@ class UserController {
                     image: fileName
                 }
             });
-            res.json({user: {...new UserDto(result), image: fileName}});
+            res.json({ user: { ...new UserDto(result), image: fileName } });
         } catch (error) {
             next(ApiError.BadRequest(e.message))
         }

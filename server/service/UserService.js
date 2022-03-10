@@ -18,14 +18,15 @@ class UserService {
         }
     }
 
-    async registration(email, password, role) {
+    async registration(email, password, role, name) {
         const candidate = await User.findOne({email})
         if (candidate) {
             throw ApiError.BadRequest(`Користувач з логіном ${email} існує!`)
         }
         const hashPassword = await bcrypt.hash(password, 9)
         const activationLink = uuid.v4()
-        const user = await User.create({email, password: hashPassword, activationLink, role})
+        name = name || `User${uuid.v4().split('-').shift()}`
+        const user = await User.create({email, password: hashPassword, activationLink, role,name })
         await mailService.sendActivationMail(email, `${process.env.API_URL}/api/user/activate/${activationLink}`);
         return this.getTokens(user)
     }
@@ -57,7 +58,7 @@ class UserService {
     }
 
     async refresh(refreshToken) {
-        if (refreshToken) {
+        if (!refreshToken) {
             throw ApiError.UnauthorizedError()
         }
         const userData = tokenService.validateRefreshToken(refreshToken)
