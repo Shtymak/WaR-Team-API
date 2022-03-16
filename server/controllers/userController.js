@@ -67,7 +67,15 @@ class UserController {
 
     async getOne(req, res, next) {
         try {
-        } catch (e) {}
+            const { id } = req.params;
+            const user = await User.findById(id);
+            if (!user) {
+                return next(ApiError.NotFound('Користувача не існує'));
+            }
+            res.json({ user: new UserDto(user) });
+        } catch (e) {
+            next(ApiError.Internal(e.message));
+        }
     }
 
     async activate(req, res, next) {

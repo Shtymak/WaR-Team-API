@@ -26,7 +26,9 @@ router.put(
     body('name').isLength({ min: 4, max: 24 }),
     /* checkRoleMiddleware("ADMIN"),*/ dietController.update
 );
+
 router.get('/:id/recipes', dietController.getRecipes);
+router.delete('/remove', dietController.removeRecipe);
 router.post('/add', dietController.addRecepie);
 
 module.exports = router;

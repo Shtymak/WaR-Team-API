@@ -13,20 +13,12 @@ const PORT = process.env.PORT || 5000;
 const app = express();
 const os = require('os');
 const options = {
-  uploadDir: os.tmpdir(),
-  autoClean: true,
+    uploadDir: os.tmpdir(),
+    autoClean: true,
 };
 
 app.use(express.json());
 
-//   // parse data with connect-multiparty.
-//   app.use(formData.parse(options));
-//   // delete from the request all empty files (size == 0)
-//   app.use(formData.format());
-
-//   app.use(formData.stream());
-
-//   app.use(formData.union());
 app.use(cookieParser());
 app.use(cors());
 app.use(express.static(path.resolve(__dirname, 'static')));
@@ -35,12 +27,13 @@ app.use('/api', router);
 app.use(errorMiddleware);
 
 const start = async () => {
-  try {
-    await mongoose.connect(process.env.DB_URL, {});
-    app.listen(PORT, () => console.log(`Server started on PORT = ${PORT}`));
-  } catch (e) {
-    console.log(e);
-  }
+    try {
+        await mongoose.connect(process.env.DB_URL, {});
+
+        app.listen(PORT, () => console.log(`Server started on PORT = ${PORT}`));
+    } catch (e) {
+        console.log(e);
+    }
 };
 
 start().then();

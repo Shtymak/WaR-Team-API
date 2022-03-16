@@ -98,6 +98,23 @@ class DietController {
         }
     }
 
+    async removeRecipe(req, res, next) {
+        try {
+            const { recepieId, dietId } = req.body;
+            const recipe = await Recipe.findById(recepieId);
+            const result = await Diet.deleteOne(
+                { _id: dietId },
+                {
+                    $pull: {
+                        recipes: recipe._id,
+                    },
+                }
+            );
+            res.json(result);
+        } catch (error) {
+            next(ApiError.Internal(error.message));
+        }
+    }
     async getRecipes(req, res, next) {
         try {
             const { id } = req.params;
