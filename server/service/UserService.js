@@ -5,6 +5,7 @@ const tokenService = require('./TokenService');
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const UserDto = require('../dtos/userDto');
+const FavoriteDiets = require('../models/FavoriteDiets');
 
 class UserService {
     async getTokens(user) {
@@ -32,6 +33,7 @@ class UserService {
             role,
             name,
         });
+        await FavoriteDiets.create({ user: user._id });
         await mailService.sendActivationMail(
             email,
             `${process.env.API_URL}/api/user/activate/${activationLink}`

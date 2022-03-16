@@ -7,6 +7,7 @@ const Diet = require('../models/Diet');
 const Recipe = require('../models/Recipe');
 const recipeDto = require('../dtos/recipeDto');
 const dietDto = require('../dtos/dietDto');
+const FavoriteDiets = require('../models/FavoriteDiets');
 class DietController {
     async create(req, res, next) {
         try {
@@ -86,7 +87,7 @@ class DietController {
             const result = await Diet.updateOne(
                 { _id: dietId },
                 {
-                    $push: {
+                    $addToSet: {
                         recipes: recipe._id,
                     },
                 }
@@ -111,6 +112,68 @@ class DietController {
             });
             const recipesDto = recipes.map((recipe) => new recipeDto(recipe));
             res.json({ recipes: recipesDto });
+        } catch (error) {
+            next(ApiError.Internal(error.message));
+        }
+    }
+
+    async addToFavorite(req, res, next) {
+        try {
+            const { dietId } = req.body;
+            const { id } = req.user;
+
+            const result = await FavoriteDiets.updateOne(
+                {
+                    user: id,
+                },
+                {
+                    $addToSet: {
+                        diets: dietId,
+                    },
+                }
+            );
+            res.json(result);
+        } catch (error) {
+            next(ApiError.Internal(error.message));
+        }
+    }
+
+    async removeFromFavorite(req, res, next) {
+        try {
+            const { dietId } = req.body;
+            const { id } = req.user;
+            const diet = await Diet.findById(dietId);
+            if (!diet) {
+                return next(ApiError.NotFound(`Дієти з id:${dietId} немає!`));
+            }
+            const result = await FavoriteDiets.findOneAndUpdate(
+                {
+                    user: id,
+                },
+                {
+                    $pull: {
+                        diets: diet._id,
+                    },
+                }
+            );
+            res.json(result);
+        } catch (error) {
+            next(ApiError.Internal(error.message));
+        }
+    }
+
+    async getFavotites(req, res, next) {
+        try {
+            const { id } = req.user;
+            const favorites = await FavoriteDiets.findOne({ user: id });
+            if (!favorites) {
+                return next(
+                    ApiError.NotFound(
+                        'Помилка! Цей користувач не обирав улюблені дієти'
+                    )
+                );
+            }
+            res.json({ diets: favorites.diets });
         } catch (error) {
             next(ApiError.Internal(error.message));
         }
