@@ -8,6 +8,7 @@ const Recipe = require('../models/Recipe');
 const recipeDto = require('../dtos/recipeDto');
 const dietDto = require('../dtos/dietDto');
 const FavoriteDiets = require('../models/FavoriteDiets');
+const { Types } = require('mongoose');
 class DietController {
     async create(req, res, next) {
         try {
@@ -83,12 +84,11 @@ class DietController {
     async addRecepie(req, res, next) {
         try {
             const { recepieId, dietId } = req.body;
-            const recipe = await Recipe.findById(recepieId);
             const result = await Diet.updateOne(
                 { _id: dietId },
                 {
                     $addToSet: {
-                        recipes: recipe._id,
+                        recipes: Types.ObjectId(recepieId),
                     },
                 }
             );
@@ -101,12 +101,11 @@ class DietController {
     async removeRecipe(req, res, next) {
         try {
             const { recepieId, dietId } = req.body;
-            const recipe = await Recipe.findById(recepieId);
             const result = await Diet.deleteOne(
                 { _id: dietId },
                 {
                     $pull: {
-                        recipes: recipe._id,
+                        recipes: Types.ObjectId(recepieId),
                     },
                 }
             );
@@ -138,18 +137,17 @@ class DietController {
         try {
             const { dietId } = req.body;
             const { id } = req.user;
-
             const result = await FavoriteDiets.updateOne(
                 {
                     user: id,
                 },
                 {
                     $addToSet: {
-                        diets: dietId,
+                        diets: Types.ObjectId(dietId),
                     },
                 }
             );
-            res.json(result);
+            res.json({ result: result.modifiedCount > 0 ? 'OK' : 'EXIST' });
         } catch (error) {
             next(ApiError.Internal(error.message));
         }
@@ -159,21 +157,17 @@ class DietController {
         try {
             const { dietId } = req.body;
             const { id } = req.user;
-            const diet = await Diet.findById(dietId);
-            if (!diet) {
-                return next(ApiError.NotFound(`Дієти з id:${dietId} немає!`));
-            }
-            const result = await FavoriteDiets.findOneAndUpdate(
+            const result = await FavoriteDiets.updateOne(
                 {
                     user: id,
                 },
                 {
                     $pull: {
-                        diets: diet._id,
+                        diets: Types.ObjectId(dietId),
                     },
                 }
             );
-            res.json(result);
+            res.json({ result: result.modifiedCount > 0 ? 'OK' : 'FAIL' });
         } catch (error) {
             next(ApiError.Internal(error.message));
         }
