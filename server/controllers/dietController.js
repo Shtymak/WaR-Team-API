@@ -9,6 +9,17 @@ const recipeDto = require('../dtos/recipeDto');
 const dietDto = require('../dtos/dietDto');
 const FavoriteDiets = require('../models/FavoriteDiets');
 const { Types } = require('mongoose');
+
+function isValidDietAndRecipeIds(dietId, recepieId = null) {
+    if (!Types.ObjectId.isValid(dietId)) {
+        return false;
+    }
+    if (!Types.ObjectId.isValid(recepieId) && recepieId) {
+        return false;
+    }
+    return true;
+}
+
 class DietController {
     async create(req, res, next) {
         try {
@@ -84,6 +95,9 @@ class DietController {
     async addRecepie(req, res, next) {
         try {
             const { recepieId, dietId } = req.body;
+            if (!isValidDietAndRecipeIds(dietId, recepieId)) {
+                return next(ApiError.Internal('Некоректний id параметр'));
+            }
             const result = await Diet.updateOne(
                 { _id: dietId },
                 {
@@ -101,6 +115,9 @@ class DietController {
     async removeRecipe(req, res, next) {
         try {
             const { recepieId, dietId } = req.body;
+            if (!isValidDietAndRecipeIds(dietId, recepieId)) {
+                return next(ApiError.Internal('Некоректний id параметр'));
+            }
             const result = await Diet.deleteOne(
                 { _id: dietId },
                 {
@@ -137,6 +154,9 @@ class DietController {
         try {
             const { dietId } = req.body;
             const { id } = req.user;
+            if (!Types.ObjectId.isValid(dietId)) {
+                return next(ApiError.Internal('Некоректне id дієти'));
+            }
             const result = await FavoriteDiets.updateOne(
                 {
                     user: id,
@@ -157,6 +177,9 @@ class DietController {
         try {
             const { dietId } = req.body;
             const { id } = req.user;
+            if (!isValidDietAndRecipeIds(dietId, recepieId)) {
+                return next(ApiError.Internal('Некоректний id параметр'));
+            }
             const result = await FavoriteDiets.updateOne(
                 {
                     user: id,
