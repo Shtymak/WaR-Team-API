@@ -10,15 +10,7 @@ const dietDto = require('../dtos/dietDto');
 const FavoriteDiets = require('../models/FavoriteDiets');
 const { Types } = require('mongoose');
 
-function isValidDietAndRecipeIds(dietId, recepieId = null) {
-    if (!Types.ObjectId.isValid(dietId)) {
-        return false;
-    }
-    if (!Types.ObjectId.isValid(recepieId) && recepieId) {
-        return false;
-    }
-    return true;
-}
+const dietService = require('../service/DietService');
 
 class DietController {
     async create(req, res, next) {
@@ -31,14 +23,7 @@ class DietController {
                     ApiError.BadRequest('Помилка валідації', errors.array())
                 );
             }
-            const fileName = uuid.v4() + fileType;
-            image
-                .mv(path.resolve(__dirname, '..', 'static', 'diet', fileName))
-                .then((r) => console.log(r));
-            const diet = await Diet.create({
-                name,
-                image: fileName,
-            });
+            const diet = await dietService.create(name, image);
             res.json(diet);
         } catch (e) {
             next(ApiError.BadRequest(e.message));
