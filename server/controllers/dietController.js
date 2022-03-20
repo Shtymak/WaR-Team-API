@@ -12,6 +12,16 @@ const { Types } = require('mongoose');
 
 const dietService = require('../service/DietService');
 
+function isValidDietAndRecipeIds(dietId, recepieId = null) {
+    if (!Types.ObjectId.isValid(dietId)) {
+        return false;
+    }
+    if (!Types.ObjectId.isValid(recepieId) && recepieId) {
+        return false;
+    }
+    return true;
+}
+
 class DietController {
     async create(req, res, next) {
         try {
@@ -162,7 +172,7 @@ class DietController {
         try {
             const { dietId } = req.body;
             const { id } = req.user;
-            if (!isValidDietAndRecipeIds(dietId, recepieId)) {
+            if (!isValidDietAndRecipeIds(dietId)) {
                 return next(ApiError.Internal('Некоректний id параметр'));
             }
             const result = await FavoriteDiets.updateOne(

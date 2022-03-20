@@ -9,6 +9,7 @@ router.post(
     '/',
     body('name').isLength({ min: 4, max: 24 }),
     body('description').isLength({ min: 25, max: 5000 }),
+    checkRoleMiddleware('ADMIN'),
     recipeController.create
 );
 router.get('/:id', recipeController.getOne);

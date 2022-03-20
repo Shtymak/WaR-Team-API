@@ -5,16 +5,6 @@ const { validationResult } = require('express-validator');
 const ApiError = require('../error/ApiError');
 const Diet = require('../models/Diet');
 
-function isValidDietAndRecipeIds(dietId, recepieId = null) {
-    if (!Types.ObjectId.isValid(dietId)) {
-        return false;
-    }
-    if (!Types.ObjectId.isValid(recepieId) && recepieId) {
-        return false;
-    }
-    return true;
-}
-
 class DietService {
     async create(name, image) {
         try {

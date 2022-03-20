@@ -8,7 +8,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 router.post(
     '/',
     body('name').isLength({ min: 4, max: 24 }),
-    /*checkRoleMiddleware("ADMIN"),*/ dietController.create
+    checkRoleMiddleware('ADMIN'),
+    dietController.create
 );
 
 router.get('/favorites', authMiddleware, dietController.getFavotites);
@@ -24,11 +25,16 @@ router.get('/', dietController.getAll);
 router.put(
     '/',
     body('name').isLength({ min: 4, max: 24 }),
-    /* checkRoleMiddleware("ADMIN"),*/ dietController.update
+    checkRoleMiddleware('ADMIN'),
+    dietController.update
 );
 
 router.get('/:id/recipes', dietController.getRecipes);
-router.delete('/remove', dietController.removeRecipe);
-router.post('/add', dietController.addRecepie);
+router.delete(
+    '/remove',
+    checkRoleMiddleware('ADMIN'),
+    dietController.removeRecipe
+);
+router.post('/add', checkRoleMiddleware('ADMIN'), dietController.addRecepie);
 
 module.exports = router;
