@@ -1,7 +1,4 @@
 const ApiError = require('../error/ApiError');
-const uuid = require('uuid');
-const fileType = '.jpg';
-const path = require('path');
 const { validationResult } = require('express-validator');
 const Diet = require('../models/Diet');
 const Recipe = require('../models/Recipe');
@@ -11,16 +8,6 @@ const FavoriteDiets = require('../models/FavoriteDiets');
 const { Types } = require('mongoose');
 
 const dietService = require('../service/DietService');
-
-function isValidDietAndRecipeIds(dietId, recepieId = null) {
-    if (!Types.ObjectId.isValid(dietId)) {
-        return false;
-    }
-    if (!Types.ObjectId.isValid(recepieId) && recepieId) {
-        return false;
-    }
-    return true;
-}
 
 class DietController {
     async create(req, res, next) {
@@ -53,9 +40,8 @@ class DietController {
     }
     async getAll(req, res, next) {
         try {
-            const diets = await Diet.find();
-            const dietDtos = diets.map((diet) => new dietDto(diet));
-            res.json({ diets: dietDtos });
+            const diets = await dietService.getAll();
+            res.json({ diets });
         } catch (error) {
             next(
                 ApiError.BadRequest(
@@ -73,14 +59,7 @@ class DietController {
                     ApiError.BadRequest('Помилка валідації', errors.array())
                 );
             }
-            const result = await Diet.findOneAndUpdate(
-                { _id: id },
-                {
-                    $set: {
-                        name: name,
-                    },
-                }
-            );
+            const result = await dietService.update(id, name);
             res.json(new dietDto(result));
         } catch (error) {
             next(ApiError.NotFound(error.message));
@@ -90,17 +69,7 @@ class DietController {
     async addRecepie(req, res, next) {
         try {
             const { recepieId, dietId } = req.body;
-            if (!isValidDietAndRecipeIds(dietId, recepieId)) {
-                return next(ApiError.Internal('Некоректний id параметр'));
-            }
-            const result = await Diet.updateOne(
-                { _id: dietId },
-                {
-                    $addToSet: {
-                        recipes: Types.ObjectId(recepieId),
-                    },
-                }
-            );
+            const result = await dietService.addRecepie(dietId, recepieId);
             res.json(result);
         } catch (error) {
             next(ApiError.Internal(error.message));
@@ -110,17 +79,7 @@ class DietController {
     async removeRecipe(req, res, next) {
         try {
             const { recepieId, dietId } = req.body;
-            if (!isValidDietAndRecipeIds(dietId, recepieId)) {
-                return next(ApiError.Internal('Некоректний id параметр'));
-            }
-            const result = await Diet.deleteOne(
-                { _id: dietId },
-                {
-                    $pull: {
-                        recipes: Types.ObjectId(recepieId),
-                    },
-                }
-            );
+            const result = await dietService.removeRecipe(dietId, recepieId);
             res.json(result);
         } catch (error) {
             next(ApiError.Internal(error.message));
