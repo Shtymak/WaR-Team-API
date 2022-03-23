@@ -1,11 +1,7 @@
 const ApiError = require('../error/ApiError');
 const { validationResult } = require('express-validator');
 const Diet = require('../models/Diet');
-const Recipe = require('../models/Recipe');
-const recipeDto = require('../dtos/recipeDto');
 const dietDto = require('../dtos/dietDto');
-const FavoriteDiets = require('../models/FavoriteDiets');
-const { Types } = require('mongoose');
 
 const dietService = require('../service/DietService');
 
@@ -88,17 +84,8 @@ class DietController {
     async getRecipes(req, res, next) {
         try {
             const { id } = req.params;
-            const diet = await Diet.findById(id);
-            if (!diet) {
-                return next(ApiError.NotFound(`Дієти з id:${id} немає`));
-            }
-            const recipes = await Recipe.find({
-                _id: {
-                    $in: diet.recipes,
-                },
-            });
-            const recipesDto = recipes.map((recipe) => new recipeDto(recipe));
-            res.json({ recipes: recipesDto });
+            const recipes = await dietService.getRecipes(id);
+            res.json({ recipes });
         } catch (error) {
             next(ApiError.Internal(error.message));
         }
@@ -108,19 +95,7 @@ class DietController {
         try {
             const { dietId } = req.body;
             const { id } = req.user;
-            if (!Types.ObjectId.isValid(dietId)) {
-                return next(ApiError.Internal('Некоректне id дієти'));
-            }
-            const result = await FavoriteDiets.updateOne(
-                {
-                    user: id,
-                },
-                {
-                    $addToSet: {
-                        diets: Types.ObjectId(dietId),
-                    },
-                }
-            );
+            const result = await dietService.addToFavorite(dietId, id);
             res.json({ result: result.modifiedCount > 0 ? 'OK' : 'EXIST' });
         } catch (error) {
             next(ApiError.Internal(error.message));
@@ -131,19 +106,7 @@ class DietController {
         try {
             const { dietId } = req.body;
             const { id } = req.user;
-            if (!isValidDietAndRecipeIds(dietId)) {
-                return next(ApiError.Internal('Некоректний id параметр'));
-            }
-            const result = await FavoriteDiets.updateOne(
-                {
-                    user: id,
-                },
-                {
-                    $pull: {
-                        diets: Types.ObjectId(dietId),
-                    },
-                }
-            );
+            const result = await dietService.removeFromFavorite(dietId, id);
             res.json({ result: result.modifiedCount > 0 ? 'OK' : 'FAIL' });
         } catch (error) {
             next(ApiError.Internal(error.message));
@@ -153,14 +116,7 @@ class DietController {
     async getFavotites(req, res, next) {
         try {
             const { id } = req.user;
-            const favorites = await FavoriteDiets.findOne({ user: id });
-            if (!favorites) {
-                return next(
-                    ApiError.NotFound(
-                        'Помилка! Цей користувач не обирав улюблені дієти'
-                    )
-                );
-            }
+            const favorites = await dietService.getFavorites(id);
             res.json({ diets: favorites.diets });
         } catch (error) {
             next(ApiError.Internal(error.message));
