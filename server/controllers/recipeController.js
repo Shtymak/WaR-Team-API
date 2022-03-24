@@ -6,6 +6,8 @@ const { validationResult } = require('express-validator');
 const Recipe = require('../models/Recipe');
 const recipeDto = require('../dtos/recipeDto');
 
+const recipeService  = require('../service/RecipeService')
+
 class RecipeController {
     async create(req, res, next) {
         try {
@@ -17,18 +19,8 @@ class RecipeController {
                     ApiError.BadRequest('Помилка валідації', errors.array())
                 );
             }
-            const fileName = uuid.v4() + fileType;
-            image
-                .mv(path.resolve(__dirname, '..', 'static', 'recipe', fileName))
-                .then((r) => console.log(r));
-
-            const recipe = await Recipe.create({
-                name,
-                description,
-                image: fileName,
-                ingredients: JSON.parse(ingredients),
-            });
-            res.json(recipe);
+            const recipe = await recipeService.create(name, description, ingredients, image);
+            res.json(recipe)
         } catch (error) {
             next(ApiError.Internal(error.message));
         }
@@ -44,7 +36,11 @@ class RecipeController {
         }
     }
 
-    async update(req, res, next) {}
+    async update(req, res, next) {
+        const {recipeId, name} = req.body
+        const result = await recipeService.update(recipeId, name)
+        res.json(result)
+    }
 }
 
 module.exports = new RecipeController();
