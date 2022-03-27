@@ -12,7 +12,7 @@ router.post(
     dietController.create
 );
 
-router.get('/favorites', authMiddleware, dietController.getFavotites);
+router.get('/favorites', authMiddleware, dietController.getFavorites);
 router.post('/favorite/add', authMiddleware, dietController.addToFavorite);
 router.delete(
     '/favorite/remove',

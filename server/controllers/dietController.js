@@ -74,8 +74,8 @@ class DietController {
 
     async removeRecipe(req, res, next) {
         try {
-            const { recepieId, dietId } = req.body;
-            const result = await dietService.removeRecipe(dietId, recepieId);
+            const { recipeId, dietId } = req.body;
+            const result = await dietService.removeRecipe(dietId, recipeId);
             res.json(result);
         } catch (error) {
             next(ApiError.Internal(error.message));
@@ -113,7 +113,7 @@ class DietController {
         }
     }
 
-    async getFavotites(req, res, next) {
+    async getFavorites(req, res, next) {
         try {
             const { id } = req.user;
             const favorites = await dietService.getFavorites(id);
